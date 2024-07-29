@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Χειροκίνητο checkout από τοπικό filesystem μέσω script
+                script {
+                    deleteDir()  // Καθαρίζει προηγούμενο workspace
+                    dir('C:\\Users\\Jim_Tzel\\Desktop\\Master\\Ασφαλής Προγραμματισμός\\RepoGit\\project3-weatherStats') {
+                        // Εκτελεί εντολές σε αυτόν τον κατάλογο
+                    }
+                }
+            }
+        }
+
+        stage('Static Analysis') {
+            steps {
+                // Εκτέλεση static code analysis με SonarQube
+                script {
+                    docker.image('sonarsource/sonar-scanner-cli').inside {
+                        sh 'sonar-scanner -Dsonar.projectBaseDir=C:\\Users\\Jim_Tzel\\Desktop\\Master\\Ασφαλής Προγραμματισμός\\RepoGit\\project3-weatherStats'
+                    }
+                }
+                // Εκτέλεση truffleHog για ανίχνευση ευαίσθητων δεδομένων
+                script {
+                    docker.image('trufflesecurity/trufflehog:latest').inside {
+                        sh 'trufflehog file://C:\\Users\\Jim_Tzel\\Desktop\\Master\\Ασφαλής Προγραμματισμός\\RepoGit\\project3-weatherStats'
+                    }
+                }
+            }
+        }
+
+        stage('Dynamic Analysis') {
+            steps {
+                // Εκτέλεση Nmap scan
+                script {
+                    docker.image('instrumentisto/nmap').inside {
+                        sh 'nmap -v -A your-target-ip'
+                    }
+                }
+                // Εκτέλεση SQLMap
+                script {
+                    docker.image('paoloo/sqlmap').inside {
+                        sh 'sqlmap -u http://example.com --batch'
+                    }
+                }
+            }
+        }
+
+        stage('Docker Security Check') {
+            steps {
+                // Έλεγχος Docker containers για ευπάθειες
+                script {
+                    docker.image('aquasec/trivy:latest').inside {
+                        sh 'trivy image your-image-name'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Application...'
+                // Εδώ μπορείτε να εκτελέσετε τα scripts για deployment
+            }
+        }
+    }
+}
