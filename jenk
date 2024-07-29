@@ -1,26 +1,20 @@
 pipeline {
     agent any
 
-    environment {
-        // Ορίστε περιβαλλοντικές μεταβλητές εδώ αν χρειάζεται
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/jimtz/weather.git'  // Χρησιμοποιεί το GitHub repository URL
+                git 'https://github.com/jimtz/weather.git'
             }
         }
 
         stage('Static Analysis') {
             steps {
-                // Εκτέλεση SonarQube για static code analysis
                 script {
                     docker.image('sonarsource/sonar-scanner-cli').inside {
                         sh 'sonar-scanner'
                     }
                 }
-                // Εκτέλεση truffleHog για ανίχνευση ευαίσθητων δεδομένων
                 script {
                     docker.image('trufflesecurity/trufflehog:latest').inside {
                         sh 'trufflehog https://github.com/jimtz/weather.git'
@@ -31,16 +25,14 @@ pipeline {
 
         stage('Dynamic Analysis') {
             steps {
-                // Εκτέλεση Nmap για ανίχνευση ανοιχτών πορτών και ευπαθειών
                 script {
                     docker.image('instrumentisto/nmap').inside {
-                        sh 'nmap -v -A target-ip'  // Αντικαταστήστε 'target-ip' με την πραγματική IP
+                        sh 'nmap -v -A target-ip'
                     }
                 }
-                // Εκτέλεση SQLMap
                 script {
                     docker.image('paoloo/sqlmap').inside {
-                        sh 'sqlmap -u target-url --batch'  // Αντικαταστήστε 'target-url' με την πραγματική URL
+                        sh 'sqlmap -u target-url --batch'
                     }
                 }
             }
@@ -48,10 +40,9 @@ pipeline {
 
         stage('Docker Security Check') {
             steps {
-                // Έλεγχος Docker containers για ευπάθειες με το Trivy
                 script {
                     docker.image('aquasec/trivy:latest').inside {
-                        sh 'trivy image your-docker-image'  // Αντικαταστήστε 'your-docker-image' με την πραγματική εικόνα Docker
+                        sh 'trivy image your-docker-image'
                     }
                 }
             }
@@ -60,7 +51,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying Application...'
-                // Προσθέστε εδώ τα βήματα για το deployment
             }
         }
     }
@@ -80,7 +70,6 @@ pipeline {
         }
         changed {
             echo 'This will run only if the state of the Pipeline has changed'
-            echo 'For example, if the Pipeline was previously failing but is now successful'
         }
     }
 }
