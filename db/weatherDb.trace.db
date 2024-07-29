@@ -1,0 +1,9 @@
+2024-02-27 11:02:48.700008+02:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]user (id integer not null, mail varchar(255), password varchar(255), username varchar(255), primary key (id))"; expected "identifier"; SQL statement:
+create table user (id integer not null, mail varchar(255), password varchar(255), username varchar(255), primary key (id)) [42001-224]
+2024-02-27 11:02:48.721009+02:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists user_forecasts add constraint FK5kd671jp014vl3f8xpjy9c7yx foreign key (user_id) references [*]user"; expected "identifier"; SQL statement:
+alter table if exists user_forecasts add constraint FK5kd671jp014vl3f8xpjy9c7yx foreign key (user_id) references user [42001-224]
+2024-02-27 11:02:59.570527+02:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "select u1_0.id,u1_0.mail,u1_0.password,u1_0.username from [*]user u1_0 where u1_0.username=?"; expected "identifier"; SQL statement:
+select u1_0.id,u1_0.mail,u1_0.password,u1_0.username from user u1_0 where u1_0.username=? [42001-224]
