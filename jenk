@@ -2,14 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // Ρύθμιση του Docker host, απαραίτητη σε περιβάλλον Windows με Docker
         DOCKER_HOST = 'tcp://localhost:2375'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Παίρνουμε τον κώδικα από το Git repository
                 git 'https://github.com/jimtz/weather.git'
             }
         }
@@ -17,11 +15,11 @@ pipeline {
         stage('Static Analysis') {
             steps {
                 script {
-                    // Εκτέλεση SonarQube scanner μέσω Docker
-                    sh 'docker run --rm -e SONAR_HOST_URL=http://your-sonar-server:9000 -v ${WORKSPACE}:/usr/src sonarsource/sonar-scanner-cli'
+
+                    sh 'docker run --rm -e SONAR_HOST_URL=http://http://internal-server-name:9000 -v ${WORKSPACE}:/usr/src sonarsource/sonar-scanner-cli'
                 }
                 script {
-                    // Εκτέλεση truffleHog για ανίχνευση ευαίσθητων δεδομένων στο repository
+
                     sh 'docker run --rm -v ${WORKSPACE}:/data trufflesecurity/trufflehog:latest trufflehog file:///data'
                 }
             }
@@ -30,8 +28,7 @@ pipeline {
         stage('Dynamic Analysis') {
             steps {
                 script {
-                    // Εκτέλεση Nmap scan, αντικαταστήστε `your-target-ip` με την πραγματική IP
-                    sh 'docker run --rm instrumentisto/nmap -v -A your-target-ip'
+                    sh 'docker run --rm instrumentisto/nmap -v -A 127.0.0.1'
                 }
                 script {
                     // Εκτέλεση SQLMap, αντικαταστήστε `target-url` με την URL που θέλετε να ελέγξετε
@@ -44,7 +41,7 @@ pipeline {
             steps {
                 script {
                     // Έλεγχος εικόνας Docker με Trivy, αντικαταστήστε `your-docker-image` με την εικόνα προς έλεγχο
-                    sh 'docker run --rm aquasec/trivy:latest image your-docker-image'
+                    sh 'docker run --rm aquasec/trivy:latest image sha256:7fef0d6ded53ed2c0bb64b8e07763090d7ae8cb509b12c3eb5d4bef89a02a704'
                 }
             }
         }
