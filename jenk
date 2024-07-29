@@ -8,20 +8,17 @@ pipeline {
             }
         }
 
-        stage('Static Analysis') {
-            steps {
-                script {
-                    docker.image('sonarsource/sonar-scanner-cli').inside {
-                        sh 'sonar-scanner'
+     stage('Static Analysis') {
+                steps {
+                    script {
+                        if (isUnix()) {
+                            sh 'docker run sonarsource/sonar-scanner-cli'
+                        } else {
+                            bat 'docker run sonarsource/sonar-scanner-cli'
+                        }
                     }
                 }
-                script {
-                    docker.image('trufflesecurity/trufflehog:latest').inside {
-                        sh 'trufflehog https://github.com/jimtz/weather.git'
-                    }
-                }
-            }
-        }
+     }
 
         stage('Dynamic Analysis') {
             steps {
@@ -52,24 +49,6 @@ pipeline {
             steps {
                 echo 'Deploying Application...'
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'This will always run'
-        }
-        success {
-            echo 'This will run only if successful'
-        }
-        failure {
-            echo 'This will run only if failed'
-        }
-        unstable {
-            echo 'This will run only if the run was marked as unstable'
-        }
-        changed {
-            echo 'This will run only if the state of the Pipeline has changed'
         }
     }
 }
