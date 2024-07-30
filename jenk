@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Ρύθμιση του Docker host
+        // Ρύθμιση του Docker host, αν απαιτείται
         DOCKER_HOST = 'tcp://localhost:2375'
     }
 
@@ -16,10 +16,14 @@ pipeline {
         stage('Static Analysis') {
             steps {
                 script {
-                    sh 'docker run --rm -e SONAR_HOST_URL=https://sonarcloud.io:9000 -v ${WORKSPACE}:/usr/src sonarsource/sonar-scanner-cli'
+                    docker.image('sonarsource/sonar-scanner-cli').inside("-e SONAR_HOST_URL=https://sonarcloud.io -v ${WORKSPACE}:/usr/src") {
+                        sh 'sonar-scanner'
+                    }
                 }
                 script {
-                    sh 'docker run --rm -v ${WORKSPACE}:/data trufflesecurity/trufflehog:latest trufflehog file:///data'
+                    docker.image('trufflesecurity/trufflehog:latest').inside("-v ${WORKSPACE}:/data") {
+                        sh 'trufflehog file:///data'
+                    }
                 }
             }
         }
@@ -27,12 +31,14 @@ pipeline {
         stage('Dynamic Analysis') {
             steps {
                 script {
-                    // Εκτέλεση Nmap scan
-                    sh 'docker run --rm instrumentisto/nmap -v -A 172.17.0.2'
+                    docker.image('instrumentisto/nmap').inside {
+                        sh 'nmap -v -A 172.17.0.2'
+                    }
                 }
                 script {
-                    // Εκτέλεση SQLMap
-                    sh 'docker run --rm paoloo/sqlmap sqlmap -u http://localhost:8080 --batch'
+                    docker.image('paoloo/sqlmap').inside {
+                        sh 'sqlmap -u http://localhost:8080 --batch'
+                    }
                 }
             }
         }
@@ -40,8 +46,9 @@ pipeline {
         stage('Docker Security Check') {
             steps {
                 script {
-                    // Έλεγχος εικόνας Docker με Trivy
-                    sh 'docker run --rm aquasec/trivy:latest image jenkins/jenkins:lts'
+                    docker.image('aquasec/trivy:latest').inside {
+                        sh 'trivy image jenkins/jenkins:lts'
+                    }
                 }
             }
         }
